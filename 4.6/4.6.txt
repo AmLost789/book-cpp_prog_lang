@@ -1,0 +1,3 @@
+Length depends on compiler (+linker).
+
+https://stackoverflow.com/questions/6007568/what-is-max-length-for-an-c-c-identifier-on-common-build-systems

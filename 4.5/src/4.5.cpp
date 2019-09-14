@@ -28,7 +28,5 @@ int main()
 	std::cout << "  min: " << std::numeric_limits<unsigned int>::min() << "\n";
 	std::cout << "  max: " << std::numeric_limits<unsigned int>::max() << "\n";
 
-
-
 	return 0;
 }
