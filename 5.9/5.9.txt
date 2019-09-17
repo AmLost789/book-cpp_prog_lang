@@ -1,0 +1,52 @@
+Haven't found any good examples online, the best reference I've found is:
+
+https://stackoverflow.com/questions/28152298/why-is-initialization-of-a-new-variable-by-itself-valid?noredirect=1&lq=1
+
+which gives the example:
+
+  void* x = &x;
+
+This is the best example since the value of x will have a legitamite value (i.e. not undefined behavior).
+This could be used to initialize x to an 'invalid' value - i.e. to check later in code to see if x has been
+set with another value.  This is particularly needed if nullptr is a 'valid' value of x since then there
+would be no other 'invalid' value to test against:
+
+For example:
+
+test(void* y)
+{
+  if (x = &x)
+  {
+    cout << "x is invalid state\n";
+  }
+  else
+  {
+    cout << "x is VALID!\n";
+  }
+}
+
+main()
+{
+  int a = 5;
+  void* x = &x;
+
+  test(x);
+  x = nullptr;
+  test(x);
+  x = &a;
+  test(x);  
+
+  return 0;
+}
+
+
+=====
+
+The only other example that I can think that this question might be referring to is the definition of structures.
+For example in the linked list example, the structure includes a pointer to its own structure time.  That is:
+
+struct Link {
+	Link* pre;
+	Link* suc;
+	List* member_of;
+};
