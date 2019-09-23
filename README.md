@@ -1,0 +1,1 @@
+Chapter 6: Largely skipped the exercises for now since it's all fairly straight-forward stuff - i.e. wouldn't learn a top by completing the exercises.  Will come back to later for completiong (I hope).
