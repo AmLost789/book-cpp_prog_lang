@@ -2,10 +2,15 @@
 #include <sstream>
 #include <chrono>
 
+// @see: https://www.pluralsight.com/blog/software-development/how-to-measure-execution-time-intervals-in-c--
+#include <Windows.h> // Windows Platform SDK
+
+_LARGE_INTEGER freq;
+_LARGE_INTEGER start;
+_LARGE_INTEGER finish;
+
 void f1(unsigned int exception_depth = 100);
 void f2(unsigned int exception_depth = 100);
-
-static std::chrono::high_resolution_clock::time_point time_stamp;
 
 struct ExampleException
 {
@@ -26,8 +31,8 @@ void f1(unsigned int exception_depth)
 		sstm << "!!!f1() Exception String!!!";
 		e.str = sstm.str();
 
-		std::cout << std::chrono::high_resolution_clock::now().time_since_epoch().count() << " - ";
 		std::cout << "f1: Exception generated, at depth: " << call_depth << "\n";
+		(void) QueryPerformanceCounter(&start);
 		throw e;
 	}
 	else
@@ -38,9 +43,9 @@ void f1(unsigned int exception_depth)
 		}
 		catch(ExampleException& e)
 		{
-			std::cout << std::chrono::high_resolution_clock::now().time_since_epoch().count() << " - ";
+			(void) QueryPerformanceCounter(&finish);
 			call_depth--;
-			std::cout << "f1: Exception caught and re-thrown, at depth: " << call_depth << "\n";
+			std::cout << "f1: Exception caught and re-thrown, at depth: " << call_depth << ", time diff: " << (finish.QuadPart-start.QuadPart) << "\n";
 			throw e;
 		}
 	}
@@ -60,8 +65,8 @@ void f2(unsigned int exception_depth)
 		sstm << "!!!f2() Exception String!!!";
 		e.str = sstm.str();
 
-		std::cout << std::chrono::high_resolution_clock::now().time_since_epoch().count() << " - ";
 		std::cout << "f2: Exception generated, at depth: " << call_depth << "\n";
+		(void) QueryPerformanceCounter(&start);
 		throw e;
 	}
 	else
@@ -72,30 +77,25 @@ void f2(unsigned int exception_depth)
 		}
 		catch(ExampleException& e)
 		{
-			std::cout << std::chrono::high_resolution_clock::now().time_since_epoch().count() << " - ";
+			(void) QueryPerformanceCounter(&finish);
 			call_depth--;
-			std::cout << "f1: Exception caught and re-thrown, at depth: " << call_depth << "\n";
+			std::cout << "f2: Exception caught and re-thrown, at depth: " << call_depth << ", time diff: " << (finish.QuadPart-start.QuadPart) << "\n";
 			throw e;
 		}
 	}
 }
 
 
-
-// NOTE: I TRIED THIS FOR SEVERAL HOURS WITH NO AVAIL.  LOOKING THAT THE TIME-STAMP
-// FROM RUNNING THE APPLICATION IDENTIFIED THAT IT'S ONLY UPDATED AT ~1MS RATE, WHICH
-// IS MUCH TOO SLOW FOR TIME DIFFERENCES WE ARE TRYING TO MEASURE.  RESEARCHING ONLINE,
-// IT LOOKS LIKE A DIFFERENT WINDOWS SPECIFIC TIMER WOULD LIKELY HAVE TO BE USED
-// TO ACHIEVE THE PERFORMANCE WE WANT.  E.G.:
-//	https://docs.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter?redirectedfrom=MSDN
-
 int main()
 {
+	(void) QueryPerformanceFrequency(&freq);
+	std::cout << "Counter Frequency: " << freq.QuadPart << " [counts/second]" << std::endl << std::endl;
+
 	try
 	{
 		std::cout << "main: try\n";
 //		f1(10);
-		f2();
+		f2(10);
 	}
 	catch(ExampleException& e)
 	{
@@ -107,5 +107,13 @@ int main()
 
 	return 0;
 }
+
+// NOTE: Typical output shows an steady increase in exception execution time as the call
+// depth decreases.  For example, with an exception thrown at a call depth of 10, exception
+// execution time is ~2.02ms.  Once this exception rolls up to a call depth of 1, the
+// exception execution time is ~2.09ms.
+//
+// I'm not sure why this is the case, but it's interesting.
+
 
 
