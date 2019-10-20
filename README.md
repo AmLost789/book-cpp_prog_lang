@@ -1,4 +1,5 @@
 9.2: I don't know what this question is asking.
+Chapter 9: skip: 9.5-9.9.
 
 Chapter 8: skip 10 & 11.
 
